@@ -9,24 +9,24 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Check cache
         run: |
-          echo upstream_heads=`git ls-remote https://github.com/roothide/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
+          echo upstream_heads=`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
 
       - name: Use cache
-        uses: actions/cache@v4.0.0
+        id: cache
+        uses: actions/cache@v4
         with:
           path: ~/theos
           key: ${{ runner.os }}-${{ env.upstream_heads }}
 
       - name: Install Theos
         run: |
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
       - name: Install newer make
@@ -38,7 +38,7 @@ jobs:
           gmake -j$(sysctl -n hw.ncpu) clean package FINALPACKAGE=1
 
       - name: Upload rootful package
-        uses: actions/upload-artifact@v4.3.1
+        uses: actions/upload-artifact@v4
         with:
           name: "Rootful Package"
           path: ${{ github.workspace }}/packages/*-arm.deb
@@ -49,18 +49,7 @@ jobs:
           gmake -j$(sysctl -n hw.ncpu) clean package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
 
       - name: Upload rootless package
-        uses: actions/upload-artifact@v4.3.1
+        uses: actions/upload-artifact@v4
         with:
           name: "Rootless Package"
           path: ${{ github.workspace }}/packages/*-arm64.deb
-
-      - name: Build roothide package
-        run: |
-          rm -f packages/*
-          gmake -j$(sysctl -n hw.ncpu) clean package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=roothide
-
-      - name: Upload roothide package
-        uses: actions/upload-artifact@v4.3.1
-        with:
-          name: "Roothide Package"
-          path: ${{ github.workspace }}/packages/*-arm64e.deb
