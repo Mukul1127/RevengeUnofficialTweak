@@ -1,0 +1,55 @@
+name: Build
+
+on: 
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Check cache
+        run: |
+          echo upstream_heads=`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
+
+      - name: Use cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/theos
+          key: ${{ runner.os }}-${{ env.upstream_heads }}
+
+      - name: Install Theos
+        run: |
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          echo "THEOS=~/theos" >> $GITHUB_ENV
+
+      - name: Install newer make
+        run: brew install make
+
+      - name: Build rootful package
+        run: |
+          rm -f packages/*
+          gmake -j$(sysctl -n hw.ncpu) clean package FINALPACKAGE=1
+
+      - name: Upload rootful package
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Rootful Package"
+          path: ${{ github.workspace }}/packages/*-arm.deb
+
+      - name: Build rootless package
+        run: |
+          rm -f packages/*
+          gmake -j$(sysctl -n hw.ncpu) clean package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+
+      - name: Upload rootless package
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Rootless Package"
+          path: ${{ github.workspace }}/packages/*-arm64.deb

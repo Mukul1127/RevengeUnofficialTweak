@@ -1,0 +1,3 @@
+[submodule "VendettaXposed"]
+	path = VendettaXposed
+	url = https://github.com/revenge-mod/RevengeXposed
