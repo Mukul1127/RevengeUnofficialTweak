@@ -1,6 +1,6 @@
 Package: dev.beefers.vendetta
-Name: Vendetta
-Version: 0.0.2
+Name: Revenge
+Version: 0.0.3
 Architecture: iphoneos-arm
 Description: A mod for Discord's mobile apps.
 Maintainer: FieryFlames
