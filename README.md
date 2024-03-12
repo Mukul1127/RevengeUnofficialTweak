@@ -1,3 +1,7 @@
+# NO GUARANTEE IT WORKS
+
+<br />
+
 # RevengeUnofficialTweak
 
 A rootful/rootless tweak to inject Revenge into Discord.
